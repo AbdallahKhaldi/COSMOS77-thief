@@ -22,13 +22,23 @@ class BrainBridge:
         self.belief = BeliefMap(state.board, state.cfg.cop_start)
         self.my_last_claim: Coord | None = None
 
-    def note_opponent_turn(self, state: TurnState, kit: SideKit, hint: str) -> None:
-        """Advance the belief one cop move and fold in liar-weighted hint evidence.
+    def note_opponent_turn(self, state: TurnState, kit: SideKit, wire: dict) -> None:
+        """Fold one cop turn into the belief map.
 
-        The factor maps the liar-score onto [0.5, 1.5]: a caught liar's claimed region is
-        DISFAVORED, an honest opponent's favored, an uncalibrated one ignored.
+        A declared barrier is EXACT evidence, and the strongest channel we have when no scent
+        grid is transmitted: rule 15 makes placements public and truthful, and a placement is
+        only legal on the cop's own cell or a 4-neighbour — so the cop is certainly inside that
+        five-cell set. Placement also replaces movement, so that turn the cop did not move and
+        the belief must NOT diffuse. Hints stay soft, weighted by the liar-score onto [0.5, 1.5].
         """
-        self.belief.diffuse()
+        placed = wire.get("barrier_placed")
+        if isinstance(placed, list) and len(placed) == 2:
+            cell = (int(placed[0]), int(placed[1]))
+            pinned = {cell, *state.board.neighbors4(cell)}
+            self.belief.condition_only(pinned)
+        else:
+            self.belief.diffuse()
+        hint = str(wire.get("hint", ""))
         direction = hinted_direction(hint) if hint else None
         if direction is not None:
             grid = state.cfg.grid_size
