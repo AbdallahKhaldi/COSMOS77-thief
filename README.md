@@ -135,13 +135,12 @@ the grid graph and `c(C4) = 2`, so the cop number is at least 2. Our retrograde 
 from the standard start — and that is the *correctness check*, not a bug. Two consequences run
 through the whole design:
 
-- **This repo's 35-step survival is a provable floor, not a hope** — the whole reason the thief half
-  is the team's guaranteed points. Playing the solver's evasion it holds the invariant "end every
-  move at graph distance ≥ 2 from the cop" indefinitely. Property tests assert survival against
-  greedy, random and solver-optimal cops, and a full-stack test asserts it end-to-end through the
-  wire, the audits and settlement.
-- **The sister repo's win has to be *constructed*.** Capture comes from graph surgery: barriers that
-  shrink the thief's reachable region until the solver's value becomes finite.
+- **Our thief's 35-step survival is a provable floor, not a hope.** Playing the solver's evasion it
+  holds the invariant "end every move at graph distance ≥ 2 from the cop" indefinitely. Property
+  tests assert survival against greedy, random and solver-optimal cops, and a full-stack test
+  asserts it end-to-end through the wire, the audits and settlement.
+- **Our cop's win has to be *constructed*.** Capture comes from graph surgery: barriers that shrink
+  the thief's reachable region until the solver's value becomes finite.
 
 ### 3.2 The retrograde solver
 
@@ -166,9 +165,8 @@ is infeasible — so it is a heuristic layer above it, in two regimes:
   choose a cut that seals us out of the thief's component** — that hands the thief a guaranteed
   survival however much area it removes.
 
-Against the kit's greedy evader that converts from five different starts, within 25 moves and inside
-the quota, frozen as a regression test. On this side, the mirror-image regression is the survival
-floor: 35 steps held against every scripted cop we can build.
+Against the kit's greedy evader this converts from five different starts, within 25 moves and inside
+the quota, frozen as a regression test.
 
 ### 3.4 Degraded mode, and the hint layer
 
@@ -255,7 +253,8 @@ make lint                                 # ruff, zero-violation policy
 make smoke                                # two real processes: handshake + one committed turn
 
 uv run cosmos-thief selfplay                # full 6-window series vs the sibling repo (two processes)
-uv run cosmos-thief selfplay --gui          # ...with the live local-truth window
+uv run cosmos-thief selfplay --gui          # ...with the live window on BOTH agents
+uv run cosmos-thief console                 # local ops panel in your browser (pairing, runs, status)
 uv run cosmos-thief replay <log.json>       # step through, Verified OK / TAMPERED per record
 uv run cosmos-thief report <result.json>    # dry run by default; --counted --send to arm
 uv run cosmos-thief compare ours.json theirs.json    # the report-compare ritual
@@ -305,7 +304,7 @@ hardcoded tunables · type hints and docstrings on public symbols · determinist
 | 8 | Sparring exam vs the community kit — 90–30 ×3, audits clean both sides | done |
 | 9–10 | Local-truth GUI + replay verification · gated Gmail + Gatekeeper | done |
 | 11 | Deploy artifacts (Render blueprint, warm-up, runbook) | code done; deploy pending |
-| 11B | Challenge Console (plug-and-play pairing) | pending |
+| 11B | Challenge console — local ops panel: readiness, one-click friendlies, pairing-packet generator | done |
 | 12 | Academic report (this file) + submission pack | done |
 | 13 | League: friendlies → counted series vs real opponents | pending |
 
