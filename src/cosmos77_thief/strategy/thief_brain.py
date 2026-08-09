@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from ..engine.board import Board, Coord
 from ..engine.capture import concession_payload, is_rule47_boxed
 from ..engine.rules import destination, legal_move_tokens, token_between
-from . import solver
+from . import jitter, solver
 from .params import StrategyParams
 from .pathing import bfs_distances
 
@@ -49,7 +49,7 @@ def _pick(
         v = float("inf") if r is None else float(r)
         return (v, len(board.open_neighbors(cell)), -cell[0], -cell[1])
 
-    return max(pool, key=value)
+    return jitter.pick_max(pool, key=lambda c: value(c)[:2], legacy=value)
 
 
 def decide_exact(
