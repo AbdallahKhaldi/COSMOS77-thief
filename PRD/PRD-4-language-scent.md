@@ -3,16 +3,18 @@
 ## Goal
 
 The uncertainty layer: emit and decay our pheromone field exactly per the pair-locked model,
-consume the cop's transmitted field, and speak the only legal deception channel — free-language
+consume the opponent's transmitted field, and speak the only legal deception channel — free-language
 hints ≤15 words, LLM-authored with a zero-token fallback that guarantees every sub-game finishes.
 
 ## Scope
 
 **In:** wiring vendored `protocol/scent.py` into the turn loop (emit / merge-by-max / deposit-then-
 decay / receiver-side decay), `hints/templates.py` (arena-aware canned truths/lies, role persona),
-`hints/gemini.py` (google-genai `gemini-2.5-flash`, 5 s timeout, metered), `hints/liar_score.py`
-(per-opponent hint-truthfulness vs scent-derived ground truth), coordinate-regex lint, hard 15-word
-truncation, intent flagging, token metering per sub-game/series.
+`hints/gemini.py` (google-genai, model + timeout from `peer.toml [trash_talk]`, metered; the
+endpoint refuses any deadline under 10 s, so shorter values are clamped up, never obeyed),
+`hints/liar_score.py` (per-opponent hint-truthfulness vs scent-derived ground truth),
+coordinate-regex lint, hard 15-word truncation, intent flagging MEASURED against the cell we
+seal, token metering per sub-game/series with the negotiated series budget as a hard stop.
 
 **Out:** the scent-model *math* itself (vendored, PRD-6 conformance), tracker consumption (PRD-3).
 
@@ -28,14 +30,13 @@ truncation, intent flagging, token metering per sub-game/series.
 | Playbook §2.2 | `intent ∈ {truth, lie}` sealed truthfully | intent computed from whether the chosen line matches our actual move/quadrant; a bluff recorded as truth is tampering |
 | Playbook §2.4 | Wire conventions | transmitted model sends `{"r,c": v}` (>0 cells only); `multiplicative_book_v1` sends `smell_grid: {}` — the key is never dropped |
 
-## Thief persona (this repo)
+## Cop persona (this repo)
 
-Hints are **survival theater**: pull the cop's belief toward the opposite quadrant from our real
-line, away from the corridors we intend to hold; occasionally truthful (flagged `truth`) to poison
-simple lie-detector calibration. Against scent-reading cops the ROI is ≈0 (our transmitted grid
-pinpoints us anyway) — the real defense is the solver, and hints must never leak a coordinate or a
-concrete direction commitment we actually intend. Config: `[trash_talk] provider = "gemini" |
-"template"`, `every_n_steps`.
+Hints are **misdirection with ROI honesty**: imply presence where we are not, herd hint-trusting
+thieves toward our wall line; occasionally truthful (flagged `truth`) to poison naive
+lie-detectors. Expected ROI vs scent-reading teams ≈ 0 (our transmitted grid pinpoints us anyway) —
+hints are flavor + points against naive teams, never load-bearing. Config:
+`[trash_talk] provider = "gemini" | "template"`, `every_n_steps`.
 
 ## Acceptance criteria
 
