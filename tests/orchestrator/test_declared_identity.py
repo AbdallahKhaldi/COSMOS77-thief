@@ -10,7 +10,7 @@ CFG = load_game_config("config/game.json")
 
 def gateway(**kwargs):
     return Gateway(
-        game_cfg=CFG, peer_cfg=PeerConfig(), role="police",
+        game_cfg=CFG, peer_cfg=PeerConfig(), role="thief",
         group_id="cosmos77", group_name="cosmos77", **kwargs,
     )
 
@@ -36,8 +36,24 @@ def test_series_driver_threads_the_count_into_every_window(tmp_path):
 
 
 def test_public_mcp_url_env_overrides_the_loopback_identity(monkeypatch):
-    public = "https://cosmos77-arena-production.up.railway.app/thief/mcp"
+    public = "https://cosmos77-arena-production.up.railway.app/cop/mcp"
     monkeypatch.setenv("COSMOS_PUBLIC_MCP_URL", public)
     assert gateway().identity["mcp_servers"]["self"] == public
     monkeypatch.delenv("COSMOS_PUBLIC_MCP_URL")
     assert gateway().identity["mcp_servers"]["self"].startswith("http://127.0.0.1:")
+
+
+def test_greeting_identity_carries_commit_and_hardware(tmp_path):
+    # opponents' displays read the GREETING for rule-53/-24 metadata (f2 lesson:
+    # MOAAMOHA saw "unknown" for both while they rode only in the audit records)
+    gw = gateway(code_version="b" * 40, hardware={"cpu_type": "x86_64", "ram_gb": 1})
+    assert gw.identity["github_commit"] == "b" * 40
+    assert gw.identity["hardware_spec"]["cpu_type"] == "x86_64"
+    driver = SeriesDriver(
+        game_cfg=CFG, peer_cfg=PeerConfig(), gid_a="cosmos77", gid_b="zulu",
+        out_dir=tmp_path, code_version="c" * 40, num_games_declared=0,
+        hardware={"cpu_type": "arm64"},
+    )
+    identity = driver.gateway_for(1).identity
+    assert identity["github_commit"] == "c" * 40
+    assert identity["hardware_spec"] == {"cpu_type": "arm64"}
